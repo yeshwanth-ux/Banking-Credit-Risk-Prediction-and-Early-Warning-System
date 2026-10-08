@@ -1,0 +1,55 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python environments
+.venv/
+venv/
+env/
+
+# Python caches and build output
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Generated data, reports, and model artifacts
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+reports/*
+!reports/.gitkeep
+models/*.pkl
+models/*.joblib
+models/*.onnx
+!models/.gitkeep
+
+# MLflow and Airflow runtime state
+mlruns/
+mlartifacts/
+airflow/logs/
+airflow/airflow.db
+airflow/airflow.cfg
+airflow/webserver_config.py
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
