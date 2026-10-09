@@ -85,6 +85,19 @@ passwords, API keys, customer data, or other secrets.
 The system design, component boundaries, and end-to-end data flow are described
 in [docs/architecture.md](docs/architecture.md).
 
+## Selected research dataset
+
+Day 2 uses the UCI South German Credit dataset for reproducible exploratory
+analysis. See [docs/dataset_card.md](docs/dataset_card.md) for source, license,
+limitations, and permitted use, and [docs/data_dictionary.md](docs/data_dictionary.md)
+for field definitions and leakage notes.
+
+Download the ignored raw data from the official source:
+
+```powershell
+.\.venv\Scripts\python.exe -m src.download_data
+```
+
 ## Development status
 
 Day 1 establishes the project structure, dependency manifests, environment

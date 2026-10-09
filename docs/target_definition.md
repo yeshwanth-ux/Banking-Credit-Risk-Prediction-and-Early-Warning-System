@@ -62,3 +62,16 @@ frozen. This keeps the reported final metrics independent of model selection.
 The 90-day horizon and precise default-status mapping are initial project
 decisions. They must be confirmed against the selected dataset, its observation
 frequency, and the intended review process before model training begins.
+
+## Day 2 dataset alignment
+
+The South German Credit dataset selected for exploratory development does not
+contain prediction timestamps, repayment-event dates, or a 90-day outcome
+window. Its documented outcome is whether the credit contract was complied with.
+For this dataset only, exploratory modeling uses `bad_credit`, where `1` means
+the documented source outcome is bad and `0` means good.
+
+`bad_credit` is a prototype classification label, not an implementation of
+`default_within_90_days`. It must not be reported as a calibrated 90-day
+probability of default. A later dataset with dated repayment outcomes is required
+to implement the primary target defined above.
