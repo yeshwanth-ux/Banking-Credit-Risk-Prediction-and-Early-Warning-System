@@ -85,6 +85,9 @@ passwords, API keys, customer data, or other secrets.
 The system design, component boundaries, and end-to-end data flow are described
 in [docs/architecture.md](docs/architecture.md).
 
+The PostgreSQL tables, relationships, migration workflow, and local integration
+test are documented in [docs/database.md](docs/database.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory
