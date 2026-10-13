@@ -13,5 +13,14 @@ The command verifies the official UCI archive and source-file SHA-256 checksums,
 then writes the official source materials and normalized `banking_data.csv` into
 `data/raw/`.
 
+After applying the database migrations, validate and ingest the normalized CSV:
+
+```powershell
+.\.venv\Scripts\python.exe -m src.ingestion
+```
+
+Validation rules, rejection handling, and ingestion audit counts are documented
+in `docs/ingestion.md`.
+
 Do not place confidential, personally identifiable, or unlicensed data in this
 directory.
