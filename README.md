@@ -88,6 +88,10 @@ in [docs/architecture.md](docs/architecture.md).
 The PostgreSQL tables, relationships, migration workflow, and local integration
 test are documented in [docs/database.md](docs/database.md).
 
+The point-in-time analytical views, leakage controls, data-quality rules, and
+weekly quality report are documented in
+[docs/trusted_dataset.md](docs/trusted_dataset.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory

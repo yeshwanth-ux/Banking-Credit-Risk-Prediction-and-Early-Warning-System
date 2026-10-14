@@ -127,3 +127,80 @@ def test_core_insert_and_query_flow() -> None:
             assert result["repayments"] == 1
             assert result["activities"] == 1
             assert result["predictions"] == 1
+
+
+def test_trusted_dataset_excludes_future_repayments() -> None:
+    unique_suffix = datetime.now(tz=UTC).strftime("%Y%m%d%H%M%S%f")
+
+    with connection() as db_connection:
+        with db_connection.transaction(force_rollback=True):
+            customer = db_connection.execute(
+                """
+                INSERT INTO customers (customer_reference, birth_date, annual_income)
+                VALUES (%s, %s, %s) RETURNING customer_id
+                """,
+                (f"DQ-CUSTOMER-{unique_suffix}", date(1990, 1, 1), Decimal("60000")),
+            ).fetchone()
+            assert customer is not None
+            loan = db_connection.execute(
+                """
+                INSERT INTO loans (
+                    loan_reference, customer_id, application_date, origination_date,
+                    principal_amount, interest_rate_pct, term_months, loan_status
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, 'active')
+                RETURNING loan_id
+                """,
+                (
+                    f"DQ-LOAN-{unique_suffix}",
+                    customer["customer_id"],
+                    date(2026, 1, 1),
+                    date(2026, 1, 2),
+                    Decimal("1200"),
+                    Decimal("8"),
+                    12,
+                ),
+            ).fetchone()
+            assert loan is not None
+            db_connection.execute(
+                """
+                INSERT INTO repayment_history (
+                    loan_id, installment_number, due_date, payment_date,
+                    scheduled_amount, paid_amount, repayment_status
+                ) VALUES
+                    (%s, 1, %s, %s, 100, 100, 'late'),
+                    (%s, 2, %s, %s, 100, 100, 'paid')
+                """,
+                (
+                    loan["loan_id"],
+                    date(2026, 2, 1),
+                    date(2026, 3, 20),
+                    loan["loan_id"],
+                    date(2026, 4, 1),
+                    date(2026, 4, 1),
+                ),
+            )
+            db_connection.execute(
+                """
+                INSERT INTO loan_prediction_dates (loan_id, prediction_date, snapshot_source)
+                VALUES (%s, %s, 'manual')
+                """,
+                (loan["loan_id"], date(2026, 3, 15)),
+            )
+
+            result = db_connection.execute(
+                """
+                SELECT * FROM trusted_loan_analytical_dataset
+                WHERE loan_id = %s AND prediction_date = %s
+                """,
+                (loan["loan_id"], date(2026, 3, 15)),
+            ).fetchone()
+
+            assert result is not None
+            assert result["installments_due"] == 1
+            assert result["installments_paid"] == 0
+            assert result["installments_overdue"] == 1
+            assert result["paid_amount_as_of_date"] == Decimal("0.00")
+            assert result["outstanding_amount_as_of_date"] == Decimal("100.00")
+            assert result["maximum_days_past_due"] == 42
+            assert result["has_30_day_delinquency"] is True
+            assert result["has_90_day_delinquency"] is False

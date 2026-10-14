@@ -30,6 +30,7 @@ data/processed/*
 !data/processed/.gitkeep
 reports/*
 !reports/.gitkeep
+!reports/data_quality_weekly.md
 models/*.pkl
 models/*.joblib
 models/*.onnx
