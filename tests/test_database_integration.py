@@ -8,6 +8,7 @@ import pytest
 from psycopg.types.json import Jsonb
 
 from src.database import connection
+from src.feature_engineering import OPERATIONAL_SOURCE_QUERY
 
 pytestmark = pytest.mark.skipif(
     os.getenv("RUN_POSTGRES_TESTS") != "1",
@@ -204,3 +205,17 @@ def test_trusted_dataset_excludes_future_repayments() -> None:
             assert result["maximum_days_past_due"] == 42
             assert result["has_30_day_delinquency"] is True
             assert result["has_90_day_delinquency"] is False
+
+            feature_rows = db_connection.execute(OPERATIONAL_SOURCE_QUERY).fetchall()
+            feature_source = next(
+                row for row in feature_rows if row["loan_id"] == loan["loan_id"]
+            )
+            assert feature_source["customer_loan_count"] == 1
+            assert feature_source["customer_outstanding_debt"] == Decimal("1200.00")
+            assert feature_source["customer_monthly_principal_obligation"] == Decimal(
+                "100.00"
+            )
+            assert feature_source["average_days_past_due"] == Decimal("42.0000")
+            assert feature_source["late_payment_count"] == 1
+            assert feature_source["previous_default_count"] == 0
+            assert feature_source["account_activity_count_90d"] == 0

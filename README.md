@@ -92,6 +92,9 @@ The point-in-time analytical views, leakage controls, data-quality rules, and
 weekly quality report are documented in
 [docs/trusted_dataset.md](docs/trusted_dataset.md).
 
+Reusable financial, repayment, customer-history, and account-activity features
+are documented in [docs/feature_engineering.md](docs/feature_engineering.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory
