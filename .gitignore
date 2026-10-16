@@ -31,6 +31,10 @@ data/processed/*
 reports/*
 !reports/.gitkeep
 !reports/data_quality_weekly.md
+!reports/historical_patterns.md
+!reports/dataset_split_summary.json
+!reports/figures/
+!reports/figures/*.png
 models/*.pkl
 models/*.joblib
 models/*.onnx

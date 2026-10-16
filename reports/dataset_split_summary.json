@@ -1,0 +1,52 @@
+{
+  "method": "stratified_random",
+  "random_state": 42,
+  "train_fraction": 0.6,
+  "validation_fraction": 0.2,
+  "test_fraction": 0.2,
+  "date_column": null,
+  "train_end": null,
+  "validation_end": null,
+  "counts": {
+    "train": 600,
+    "validation": 200,
+    "test": 200
+  },
+  "target_rates": {
+    "train": 0.3,
+    "validation": 0.3,
+    "test": 0.3
+  },
+  "dataset": "South German Credit research prototype",
+  "target": "bad_credit",
+  "id_column": "source_record_id",
+  "numerical_features": [
+    "duration_months",
+    "credit_amount_dm",
+    "age_years",
+    "credit_amount_per_month"
+  ],
+  "categorical_features": [
+    "checking_account_status",
+    "credit_history",
+    "purpose",
+    "savings",
+    "employment_duration",
+    "installment_rate",
+    "personal_status_sex",
+    "other_debtors",
+    "present_residence",
+    "property",
+    "other_installment_plans",
+    "housing",
+    "number_credits",
+    "job",
+    "people_liable",
+    "telephone",
+    "foreign_worker",
+    "young_borrower_flag",
+    "long_duration_flag"
+  ],
+  "preprocessor_fit_split": "train",
+  "row_level_assignments": "data/processed/split_assignments.csv"
+}
