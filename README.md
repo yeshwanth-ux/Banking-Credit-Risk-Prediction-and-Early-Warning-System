@@ -98,6 +98,10 @@ are documented in [docs/feature_engineering.md](docs/feature_engineering.md).
 Historical pattern analysis, split strategy, and training-only preprocessing are
 documented in [docs/data_preparation.md](docs/data_preparation.md).
 
+Logistic Regression and Random Forest baseline training, validation metrics, and
+the false-alert versus missed-default trade-off are documented in
+[docs/baseline_models.md](docs/baseline_models.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory

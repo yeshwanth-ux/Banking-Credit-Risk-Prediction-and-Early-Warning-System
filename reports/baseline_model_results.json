@@ -1,0 +1,51 @@
+{
+  "experiment": "day_8_baseline_models",
+  "dataset": "South German Credit research prototype",
+  "target": "bad_credit",
+  "positive_class": "bad credit",
+  "evaluation_split": "validation",
+  "test_split_used": false,
+  "decision_threshold": 0.5,
+  "class_imbalance_strategy": {
+    "logistic_regression": "class_weight=balanced",
+    "random_forest": "class_weight=balanced_subsample"
+  },
+  "training_rows": 600,
+  "validation_rows": 200,
+  "training_bad_credit_rate": 0.3,
+  "validation_bad_credit_rate": 0.3,
+  "transformed_feature_count": 76,
+  "models": {
+    "logistic_regression": {
+      "roc_auc": 0.7560714285714285,
+      "pr_auc": 0.580720031011502,
+      "precision": 0.4943820224719101,
+      "recall": 0.7333333333333333,
+      "f1_score": 0.5906040268456376,
+      "threshold": 0.5,
+      "true_negatives": 95,
+      "false_positives": 45,
+      "false_negatives": 16,
+      "true_positives": 44,
+      "false_positive_rate": 0.32142857142857145,
+      "false_negative_rate": 0.26666666666666666,
+      "predicted_positive_rate": 0.445
+    },
+    "random_forest": {
+      "roc_auc": 0.7896428571428571,
+      "pr_auc": 0.6317043034477123,
+      "precision": 0.5692307692307692,
+      "recall": 0.6166666666666667,
+      "f1_score": 0.592,
+      "threshold": 0.5,
+      "true_negatives": 112,
+      "false_positives": 28,
+      "false_negatives": 23,
+      "true_positives": 37,
+      "false_positive_rate": 0.2,
+      "false_negative_rate": 0.38333333333333336,
+      "predicted_positive_rate": 0.325
+    }
+  },
+  "generated_at_utc": "2026-10-19T11:50:10.234656+00:00"
+}

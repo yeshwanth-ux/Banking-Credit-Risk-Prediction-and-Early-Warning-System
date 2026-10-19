@@ -33,6 +33,9 @@ reports/*
 !reports/data_quality_weekly.md
 !reports/historical_patterns.md
 !reports/dataset_split_summary.json
+!reports/baseline_model_results.json
+!reports/baseline_model_results.csv
+!reports/baseline_model_results.md
 !reports/figures/
 !reports/figures/*.png
 models/*.pkl
