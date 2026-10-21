@@ -36,6 +36,11 @@ reports/*
 !reports/baseline_model_results.json
 !reports/baseline_model_results.csv
 !reports/baseline_model_results.md
+!reports/optimized_model_results.json
+!reports/optimized_model_results.csv
+!reports/optimized_model_results.md
+!reports/permutation_importance.csv
+!reports/model_explanations.json
 !reports/figures/
 !reports/figures/*.png
 models/*.pkl

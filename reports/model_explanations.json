@@ -1,0 +1,174 @@
+{
+  "model": "logistic_regression",
+  "method": "single_feature_training_reference_perturbation",
+  "records": [
+    {
+      "record_id": "775de43c56992028aed392711af4185547f5136d163382db241ca3fd6bef58a1",
+      "actual_bad_credit": 1,
+      "predicted_probability": 0.9014959026567929,
+      "reference_probability": 0.30414147524152096,
+      "top_contributions": [
+        {
+          "feature": "checking_account_status",
+          "observed_value": 2,
+          "reference_value": 4,
+          "probability_contribution": 0.11290203848826974
+        },
+        {
+          "feature": "duration_months",
+          "observed_value": 48,
+          "reference_value": 18.0,
+          "probability_contribution": 0.09240538097176809
+        },
+        {
+          "feature": "personal_status_sex",
+          "observed_value": 2,
+          "reference_value": 3,
+          "probability_contribution": 0.06111410359951586
+        },
+        {
+          "feature": "housing",
+          "observed_value": 1,
+          "reference_value": 2,
+          "probability_contribution": 0.025481020198139026
+        },
+        {
+          "feature": "credit_amount_dm",
+          "observed_value": 6416.0,
+          "reference_value": 2309.0,
+          "probability_contribution": 0.02483404933387945
+        },
+        {
+          "feature": "purpose",
+          "observed_value": 9,
+          "reference_value": 3,
+          "probability_contribution": 0.01925237065147789
+        },
+        {
+          "feature": "property",
+          "observed_value": 4,
+          "reference_value": 3,
+          "probability_contribution": 0.01756804331919859
+        },
+        {
+          "feature": "employment_duration",
+          "observed_value": 5,
+          "reference_value": 3,
+          "probability_contribution": -0.014508943361261739
+        }
+      ]
+    },
+    {
+      "record_id": "32bfad758299e8d29ec535d83c5ca661894006ac477b3d4568d69056bcd55a46",
+      "actual_bad_credit": 1,
+      "predicted_probability": 0.8890111733468653,
+      "reference_probability": 0.30414147524152096,
+      "top_contributions": [
+        {
+          "feature": "checking_account_status",
+          "observed_value": 1,
+          "reference_value": 4,
+          "probability_contribution": 0.21278018952177802
+        },
+        {
+          "feature": "personal_status_sex",
+          "observed_value": 2,
+          "reference_value": 3,
+          "probability_contribution": 0.06732777823966596
+        },
+        {
+          "feature": "purpose",
+          "observed_value": 0,
+          "reference_value": 3,
+          "probability_contribution": 0.06236637478900353
+        },
+        {
+          "feature": "housing",
+          "observed_value": 1,
+          "reference_value": 2,
+          "probability_contribution": 0.02821189045096273
+        },
+        {
+          "feature": "duration_months",
+          "observed_value": 24,
+          "reference_value": 18.0,
+          "probability_contribution": 0.01612623396614099
+        },
+        {
+          "feature": "property",
+          "observed_value": 2,
+          "reference_value": 3,
+          "probability_contribution": 0.010015984541445921
+        },
+        {
+          "feature": "credit_amount_dm",
+          "observed_value": 1207.0,
+          "reference_value": 2309.0,
+          "probability_contribution": -0.006517629342578157
+        },
+        {
+          "feature": "credit_amount_per_month",
+          "observed_value": 50.29166666666666,
+          "reference_value": 127.54166666666666,
+          "probability_contribution": -0.005635039851250245
+        }
+      ]
+    },
+    {
+      "record_id": "9ec3a3b870eb86871c4a87921cdf9b7ea7999b9d2f19f23e9b6fd1b25366bb38",
+      "actual_bad_credit": 1,
+      "predicted_probability": 0.8722502790461779,
+      "reference_probability": 0.30414147524152096,
+      "top_contributions": [
+        {
+          "feature": "checking_account_status",
+          "observed_value": 2,
+          "reference_value": 4,
+          "probability_contribution": 0.1365933043079548
+        },
+        {
+          "feature": "duration_months",
+          "observed_value": 48,
+          "reference_value": 18.0,
+          "probability_contribution": 0.11252801697125703
+        },
+        {
+          "feature": "personal_status_sex",
+          "observed_value": 2,
+          "reference_value": 3,
+          "probability_contribution": 0.07517442672986019
+        },
+        {
+          "feature": "credit_amount_dm",
+          "observed_value": 9960.0,
+          "reference_value": 2309.0,
+          "probability_contribution": 0.0622331084168688
+        },
+        {
+          "feature": "other_installment_plans",
+          "observed_value": 1,
+          "reference_value": 3,
+          "probability_contribution": 0.046756336931728426
+        },
+        {
+          "feature": "installment_rate",
+          "observed_value": 1,
+          "reference_value": 4,
+          "probability_contribution": -0.040400607609984984
+        },
+        {
+          "feature": "telephone",
+          "observed_value": 2,
+          "reference_value": 1,
+          "probability_contribution": -0.03523863353689172
+        },
+        {
+          "feature": "present_residence",
+          "observed_value": 2,
+          "reference_value": 4,
+          "probability_contribution": 0.018018247552992306
+        }
+      ]
+    }
+  ]
+}

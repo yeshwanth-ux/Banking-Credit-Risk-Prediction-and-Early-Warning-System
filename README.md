@@ -102,6 +102,10 @@ Logistic Regression and Random Forest baseline training, validation metrics, and
 the false-alert versus missed-default trade-off are documented in
 [docs/baseline_models.md](docs/baseline_models.md).
 
+Cross-validated model optimization, probability calibration, permutation
+importance, and local feature contributions are documented in
+[docs/model_optimization.md](docs/model_optimization.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory
