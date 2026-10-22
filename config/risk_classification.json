@@ -1,0 +1,106 @@
+{
+  "configuration_version": "risk-classification-1.0.0",
+  "frozen_at_utc": "2026-10-22T09:36:34.800389+00:00",
+  "model": {
+    "version": "optimized-logistic-regression-1.0.0",
+    "family": "logistic_regression",
+    "artifact": "models/frozen_credit_risk_model.joblib",
+    "sha256": "3c41511eae53befd4d0646e90468233846521a79d78743a63fe67476b0cd2b8d"
+  },
+  "target_definition": "South German Credit bad_credit contract-compliance outcome; prototype proxy only, not default within 90 days",
+  "probability_label": "prototype bad-credit risk probability",
+  "eligibility": {
+    "required_features": [
+      "duration_months",
+      "credit_amount_dm",
+      "age_years",
+      "credit_amount_per_month",
+      "checking_account_status",
+      "credit_history",
+      "purpose",
+      "savings",
+      "employment_duration",
+      "installment_rate",
+      "personal_status_sex",
+      "other_debtors",
+      "present_residence",
+      "property",
+      "other_installment_plans",
+      "housing",
+      "number_credits",
+      "job",
+      "people_liable",
+      "telephone",
+      "foreign_worker",
+      "young_borrower_flag",
+      "long_duration_flag"
+    ],
+    "requires_valid_documented_ranges": true
+  },
+  "risk_bands": {
+    "low": "probability < 0.44",
+    "medium": "0.44 <= probability < 0.84",
+    "high": "probability >= 0.84",
+    "medium_threshold": 0.44,
+    "high_threshold": 0.84
+  },
+  "threshold_selection": {
+    "dataset": "validation",
+    "test_split_used": false,
+    "medium_review": {
+      "false_positive_cost": 1,
+      "false_negative_cost": 5,
+      "threshold": 0.44,
+      "false_positives": 58,
+      "false_negatives": 9,
+      "weighted_cost": 103.0,
+      "true_positives": 51,
+      "true_negatives": 82,
+      "precision": 0.46788990825688076,
+      "recall": 0.85
+    },
+    "high_intervention": {
+      "false_positive_cost": 4,
+      "false_negative_cost": 1,
+      "threshold": 0.84,
+      "false_positives": 0,
+      "false_negatives": 54,
+      "weighted_cost": 54.0,
+      "true_positives": 6,
+      "true_negatives": 140,
+      "precision": 1.0,
+      "recall": 0.1
+    }
+  },
+  "warning_rules": {
+    "severe_delinquency_days": 90,
+    "worsening_delay_days": 15,
+    "high_debt_to_income_ratio": 0.4,
+    "debt_to_income_increase": 0.1
+  },
+  "explanation_reference_values": {
+    "duration_months": 18.0,
+    "credit_amount_dm": 2309.0,
+    "age_years": 34.0,
+    "credit_amount_per_month": 127.54166666666666,
+    "checking_account_status": 4,
+    "credit_history": 2,
+    "purpose": 3,
+    "savings": 1,
+    "employment_duration": 3,
+    "installment_rate": 4,
+    "personal_status_sex": 3,
+    "other_debtors": 1,
+    "present_residence": 4,
+    "property": 3,
+    "other_installment_plans": 3,
+    "housing": 2,
+    "number_credits": 1,
+    "job": 3,
+    "people_liable": 2,
+    "telephone": 1,
+    "foreign_worker": 2,
+    "young_borrower_flag": 0,
+    "long_duration_flag": 0
+  }
+}

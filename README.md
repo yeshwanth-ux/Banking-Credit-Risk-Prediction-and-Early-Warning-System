@@ -106,6 +106,10 @@ Cross-validated model optimization, probability calibration, permutation
 importance, and local feature contributions are documented in
 [docs/model_optimization.md](docs/model_optimization.md).
 
+Frozen risk bands, validation cost assumptions, historical warning rules, and
+structured human-readable warning results are documented in
+[docs/early_warning.md](docs/early_warning.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory

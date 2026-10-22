@@ -41,6 +41,7 @@ reports/*
 !reports/optimized_model_results.md
 !reports/permutation_importance.csv
 !reports/model_explanations.json
+!reports/risk_threshold_analysis.md
 !reports/figures/
 !reports/figures/*.png
 models/*.pkl
