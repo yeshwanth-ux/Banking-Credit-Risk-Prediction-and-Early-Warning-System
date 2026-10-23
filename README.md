@@ -110,6 +110,10 @@ Frozen risk bands, validation cost assumptions, historical warning rules, and
 structured human-readable warning results are documented in
 [docs/early_warning.md](docs/early_warning.md).
 
+Local MLflow experiment tracking, model registration, artifact contents, and
+prediction-service loading are documented in
+[docs/mlflow_tracking.md](docs/mlflow_tracking.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory

@@ -1,11 +1,11 @@
 {
   "configuration_version": "risk-classification-1.0.0",
-  "frozen_at_utc": "2026-10-22T09:36:34.800389+00:00",
+  "frozen_at_utc": "2026-10-23T10:33:14.133672+00:00",
   "model": {
     "version": "optimized-logistic-regression-1.0.0",
     "family": "logistic_regression",
     "artifact": "models/frozen_credit_risk_model.joblib",
-    "sha256": "3c41511eae53befd4d0646e90468233846521a79d78743a63fe67476b0cd2b8d"
+    "sha256": "02cb681db295e5ce85a71d21d1f6e3bb2e8117915257ce6ed4677496fee479e8"
   },
   "target_definition": "South German Credit bad_credit contract-compliance outcome; prototype proxy only, not default within 90 days",
   "probability_label": "prototype bad-credit risk probability",

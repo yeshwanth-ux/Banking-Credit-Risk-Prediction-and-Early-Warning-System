@@ -42,6 +42,7 @@ reports/*
 !reports/permutation_importance.csv
 !reports/model_explanations.json
 !reports/risk_threshold_analysis.md
+!reports/mlflow_registered_model.json
 !reports/figures/
 !reports/figures/*.png
 models/*.pkl
@@ -52,6 +53,8 @@ models/*.onnx
 # MLflow and Airflow runtime state
 mlruns/
 mlartifacts/
+mlflow.db
+mlflow.db-*
 airflow/logs/
 airflow/airflow.db
 airflow/airflow.cfg
