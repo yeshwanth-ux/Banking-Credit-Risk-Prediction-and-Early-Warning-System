@@ -114,6 +114,10 @@ Local MLflow experiment tracking, model registration, artifact contents, and
 prediction-service loading are documented in
 [docs/mlflow_tracking.md](docs/mlflow_tracking.md).
 
+FastAPI startup, health checks, single and batch prediction contracts, error
+behavior, and OpenAPI documentation are described in
+[docs/prediction_api.md](docs/prediction_api.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory
