@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class ApiModel(BaseModel):
@@ -98,6 +99,13 @@ class BatchPredictionRequest(ApiModel):
 
     loans: list[PredictionRequest] = Field(min_length=1, max_length=100)
 
+    @model_validator(mode="after")
+    def references_are_unique(self) -> BatchPredictionRequest:
+        references = [loan.loan_reference for loan in self.loans]
+        if len(references) != len(set(references)):
+            raise ValueError("loan_reference values must be unique within a batch")
+        return self
+
 
 class ModelExplanationResponse(ApiModel):
     feature: str
@@ -127,6 +135,9 @@ class PredictionResponse(ApiModel):
     configuration_version: str
     model_version: str
     target_definition: str
+    scoring_run_reference: str | None = None
+    prediction_id: int | None = None
+    prediction_timestamp: datetime | None = None
 
 
 class BatchPredictionResponse(ApiModel):
@@ -146,3 +157,52 @@ class HealthResponse(ApiModel):
 class ErrorResponse(ApiModel):
     error: str
     message: str
+
+
+class RiskRecordResponse(ApiModel):
+    prediction_id: int
+    scoring_run_reference: str | None
+    reference_identifier: str
+    loan_reference: str | None
+    loan_status: str | None
+    prediction_timestamp: datetime
+    model_name: str
+    model_version: str
+    model_uri: str
+    configuration_version: str
+    predicted_default_probability: float = Field(ge=0, le=1)
+    risk_band: Literal["low", "medium", "high"]
+    warnings: list[dict[str, Any]]
+
+
+class RiskRecordListResponse(ApiModel):
+    count: int = Field(ge=0)
+    records: list[RiskRecordResponse]
+
+
+class RiskCounts(ApiModel):
+    high: int = Field(ge=0)
+    medium: int = Field(ge=0)
+    low: int = Field(ge=0)
+
+
+class RiskPercentages(ApiModel):
+    high: float = Field(ge=0, le=1)
+    medium: float = Field(ge=0, le=1)
+    low: float = Field(ge=0, le=1)
+
+
+class ReportFiltersResponse(ApiModel):
+    prediction_from: datetime | None
+    prediction_to: datetime | None
+    loan_status: str | None
+    risk_category: Literal["low", "medium", "high"] | None
+
+
+class PortfolioSummaryResponse(ApiModel):
+    total_accounts: int = Field(ge=0)
+    risk_counts: RiskCounts
+    risk_percentages: RiskPercentages
+    earliest_prediction_timestamp: datetime | None
+    latest_prediction_timestamp: datetime | None
+    filters: ReportFiltersResponse

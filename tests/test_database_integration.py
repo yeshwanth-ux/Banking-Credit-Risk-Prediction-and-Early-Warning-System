@@ -9,6 +9,11 @@ from psycopg.types.json import Jsonb
 
 from src.database import connection
 from src.feature_engineering import OPERATIONAL_SOURCE_QUERY
+from src.risk_reporting import (
+    RiskRecordFilters,
+    execute_portfolio_summary_query,
+    execute_risk_records_query,
+)
 
 pytestmark = pytest.mark.skipif(
     os.getenv("RUN_POSTGRES_TESTS") != "1",
@@ -91,13 +96,19 @@ def test_core_insert_and_query_flow() -> None:
             db_connection.execute(
                 """
                 INSERT INTO risk_predictions (
-                    loan_id, prediction_timestamp, model_name, model_version,
+                    loan_id, reference_identifier, prediction_timestamp,
+                    model_name, model_version, model_uri, configuration_version,
                     default_probability, risk_band, warning_reasons, feature_snapshot
                 )
-                VALUES (%s, %s, 'integration-test', '1', %s, 'low', %s, %s)
+                VALUES (
+                    %s, %s, %s, 'integration-test', '1',
+                    'models:/integration-test/1', 'integration-test-config',
+                    %s, 'low', %s, %s
+                )
                 """,
                 (
                     loan["loan_id"],
+                    f"TEST-LOAN-{unique_suffix}",
                     datetime(2026, 2, 3, tzinfo=UTC),
                     Decimal("0.1250000"),
                     Jsonb([]),
@@ -219,3 +230,146 @@ def test_trusted_dataset_excludes_future_repayments() -> None:
             assert feature_source["late_payment_count"] == 1
             assert feature_source["previous_default_count"] == 0
             assert feature_source["account_activity_count_90d"] == 0
+
+
+def test_portfolio_summary_matches_latest_prediction_records() -> None:
+    unique_suffix = datetime.now(tz=UTC).strftime("%Y%m%d%H%M%S%f")
+    first_timestamp = datetime(2026, 10, 20, tzinfo=UTC)
+    latest_timestamp = datetime(2026, 10, 21, tzinfo=UTC)
+
+    with connection() as db_connection:
+        with db_connection.transaction(force_rollback=True):
+            customer = db_connection.execute(
+                """
+                INSERT INTO customers (customer_reference, annual_income)
+                VALUES (%s, 75000) RETURNING customer_id
+                """,
+                (f"REPORT-CUSTOMER-{unique_suffix}",),
+            ).fetchone()
+            assert customer is not None
+            loans: list[dict] = []
+            for index, status in enumerate(("active", "active", "delinquent"), start=1):
+                loan = db_connection.execute(
+                    """
+                    INSERT INTO loans (
+                        loan_reference, customer_id, application_date,
+                        principal_amount, term_months, loan_status
+                    ) VALUES (%s, %s, %s, %s, 12, %s)
+                    RETURNING loan_id, loan_reference
+                    """,
+                    (
+                        f"REPORT-LOAN-{index}-{unique_suffix}",
+                        customer["customer_id"],
+                        date(2026, 1, index),
+                        Decimal(str(1000 * index)),
+                        status,
+                    ),
+                ).fetchone()
+                assert loan is not None
+                loans.append(loan)
+
+            run = db_connection.execute(
+                """
+                INSERT INTO scoring_runs (
+                    run_reference, request_type, started_at, completed_at, status,
+                    model_name, model_version, model_uri, configuration_version,
+                    requested_by, requested_count, succeeded_count, failed_count
+                ) VALUES (
+                    %s, 'batch', %s, %s, 'completed', 'integration-model', '7',
+                    'models:/integration@champion', 'integration-config',
+                    'integration-test', 3, 3, 0
+                ) RETURNING scoring_run_id
+                """,
+                (f"REPORT-RUN-{unique_suffix}", first_timestamp, first_timestamp),
+            ).fetchone()
+            assert run is not None
+            for loan, band, probability in zip(
+                loans,
+                ("high", "medium", "low"),
+                ("0.9", "0.6", "0.2"),
+                strict=True,
+            ):
+                db_connection.execute(
+                    """
+                    INSERT INTO risk_predictions (
+                        loan_id, scoring_run_id, reference_identifier,
+                        prediction_timestamp, model_name, model_version, model_uri,
+                        configuration_version, default_probability, risk_band,
+                        warning_reasons, feature_snapshot
+                    ) VALUES (
+                        %s, %s, %s, %s, 'integration-model', '7',
+                        'models:/integration@champion', 'integration-config',
+                        %s, %s, '[]'::JSONB, '{}'::JSONB
+                    )
+                    """,
+                    (
+                        loan["loan_id"],
+                        run["scoring_run_id"],
+                        loan["loan_reference"],
+                        first_timestamp,
+                        Decimal(probability),
+                        band,
+                    ),
+                )
+
+            second_run = db_connection.execute(
+                """
+                INSERT INTO scoring_runs (
+                    run_reference, request_type, started_at, completed_at, status,
+                    model_name, model_version, model_uri, configuration_version,
+                    requested_by, requested_count, succeeded_count, failed_count
+                ) VALUES (
+                    %s, 'single', %s, %s, 'completed', 'integration-model', '7',
+                    'models:/integration@champion', 'integration-config',
+                    'integration-test', 1, 1, 0
+                ) RETURNING scoring_run_id
+                """,
+                (f"REPORT-RUN-LATEST-{unique_suffix}", latest_timestamp, latest_timestamp),
+            ).fetchone()
+            assert second_run is not None
+            db_connection.execute(
+                """
+                INSERT INTO risk_predictions (
+                    loan_id, scoring_run_id, reference_identifier,
+                    prediction_timestamp, model_name, model_version, model_uri,
+                    configuration_version, default_probability, risk_band,
+                    warning_reasons, feature_snapshot
+                ) VALUES (
+                    %s, %s, %s, %s, 'integration-model', '7',
+                    'models:/integration@champion', 'integration-config',
+                    0.2, 'low', '[]'::JSONB, '{}'::JSONB
+                )
+                """,
+                (
+                    loans[0]["loan_id"],
+                    second_run["scoring_run_id"],
+                    loans[0]["loan_reference"],
+                    latest_timestamp,
+                ),
+            )
+
+            filters = RiskRecordFilters(
+                prediction_from=datetime(2026, 10, 1, tzinfo=UTC),
+                prediction_to=datetime(2026, 10, 31, tzinfo=UTC),
+            )
+            summary = execute_portfolio_summary_query(db_connection, filters)
+            records = execute_risk_records_query(db_connection, filters, limit=100)
+
+            assert summary["total_accounts"] == len(records) == 3
+            assert summary["risk_counts"] == {"high": 0, "medium": 1, "low": 2}
+            assert sum(summary["risk_counts"].values()) == summary["total_accounts"]
+            assert records[0]["prediction_timestamp"] == latest_timestamp
+
+            active_summary = execute_portfolio_summary_query(
+                db_connection,
+                RiskRecordFilters(
+                    prediction_from=datetime(2026, 10, 1, tzinfo=UTC),
+                    loan_status="active",
+                ),
+            )
+            assert active_summary["total_accounts"] == 2
+            assert active_summary["risk_counts"] == {
+                "high": 0,
+                "medium": 1,
+                "low": 1,
+            }

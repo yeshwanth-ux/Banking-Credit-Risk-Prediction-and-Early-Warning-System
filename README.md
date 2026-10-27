@@ -118,6 +118,10 @@ FastAPI startup, health checks, single and batch prediction contracts, error
 behavior, and OpenAPI documentation are described in
 [docs/prediction_api.md](docs/prediction_api.md).
 
+Persisted scoring runs, protected risk-record retrieval, portfolio aggregation,
+and report filters are documented in
+[docs/risk_reporting.md](docs/risk_reporting.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory

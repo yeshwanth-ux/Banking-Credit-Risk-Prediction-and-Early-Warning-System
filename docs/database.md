@@ -24,6 +24,7 @@ erDiagram
     LOANS ||--o{ REPAYMENT_HISTORY : has
     LOANS ||--o{ ACCOUNT_ACTIVITY : relates_to
     LOANS ||--o{ RISK_PREDICTIONS : receives
+    SCORING_RUNS ||--o{ RISK_PREDICTIONS : contains
 
     CUSTOMERS {
         bigint customer_id PK
@@ -60,6 +61,13 @@ erDiagram
         timestamptz prediction_timestamp
         numeric default_probability
         varchar risk_band
+    }
+    SCORING_RUNS {
+        bigint scoring_run_id PK
+        varchar run_reference UK
+        timestamptz completed_at
+        varchar model_version
+        integer succeeded_count
     }
 ```
 
@@ -106,5 +114,7 @@ query. Test records do not persist.
 - Use `NUMERIC`, not floating point, for money and probability values.
 - Store only non-core extensible attributes in JSONB.
 - Preserve repayment and prediction history; do not overwrite prior events.
+- Return only the restricted reporting projection; feature snapshots remain
+  database-only audit data.
 - Use least-privilege application credentials rather than the PostgreSQL
   superuser.

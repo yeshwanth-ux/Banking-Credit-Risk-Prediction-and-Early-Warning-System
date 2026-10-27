@@ -14,10 +14,11 @@ default.
 ## Run locally
 
 Start the service from the repository root after creating the Day 11 local
-MLflow registry:
+MLflow registry and applying the current PostgreSQL migrations:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
+python -m src.migrations up
 uvicorn api.main:app --host 127.0.0.1 --port 8000
 ```
 
@@ -39,13 +40,16 @@ version. If startup cannot load or verify the registered model, it returns HTTP
 
 Accepts one `loan_reference`, the 23 model `features`, and optional
 `warning_inputs`. The response includes the probability, model-only band, final
-risk band, model explanations, rule warnings, and version metadata.
+risk band, model explanations, rule warnings, version metadata, scoring-run
+reference, prediction identifier, and UTC prediction timestamp. Successful
+results are stored atomically in PostgreSQL.
 
 ### `POST /predict/batch`
 
 Accepts one to 100 single-loan requests and returns predictions in the same
 order. Invalid fields, missing fields, unknown fields, and out-of-range values
-receive FastAPI's structured HTTP 422 validation response.
+receive FastAPI's structured HTTP 422 validation response. Loan references must
+be unique within one batch. The complete batch is stored as one scoring run.
 
 Example request:
 
