@@ -80,6 +80,7 @@ class RiskRepository(Protocol):
         *,
         request_type: str,
         requested_by: str,
+        idempotency_key: str | None = None,
     ) -> StoredScoringRun: ...
 
     def fetch_risk_records(
@@ -260,11 +261,14 @@ class PostgresRiskRepository:
         *,
         request_type: str,
         requested_by: str,
+        idempotency_key: str | None = None,
     ) -> StoredScoringRun:
         if request_type not in {"single", "batch"}:
             raise ValueError("request_type must be single or batch")
         if not results:
             raise ValueError("At least one prediction result is required")
+        if idempotency_key is not None and not idempotency_key.strip():
+            raise ValueError("idempotency_key cannot be blank")
         references = [result.reference_identifier for result in results]
         if len(set(references)) != len(references):
             raise ValueError("Loan references must be unique within a scoring run")
@@ -287,9 +291,14 @@ class PostgresRiskRepository:
                 INSERT INTO scoring_runs (
                     run_reference, request_type, started_at, completed_at, status,
                     model_name, model_version, model_uri, configuration_version,
-                    requested_by, requested_count, succeeded_count, failed_count
+                    requested_by, requested_count, succeeded_count, failed_count,
+                    idempotency_key
                 )
-                VALUES (%s, %s, %s, %s, 'completed', %s, %s, %s, %s, %s, %s, %s, 0)
+                VALUES (
+                    %s, %s, %s, %s, 'completed', %s, %s, %s, %s,
+                    %s, %s, %s, 0, %s
+                )
+                ON CONFLICT (idempotency_key) DO NOTHING
                 RETURNING scoring_run_id
                 """,
                 (
@@ -304,10 +313,60 @@ class PostgresRiskRepository:
                     requested_by,
                     len(results),
                     len(results),
+                    idempotency_key,
                 ),
             ).fetchone()
             if scoring_run is None:
-                raise RuntimeError("Failed to create scoring run")
+                if idempotency_key is None:
+                    raise RuntimeError("Failed to create scoring run")
+                existing = db_connection.execute(
+                    """
+                    SELECT
+                        scoring_run_id, run_reference, completed_at,
+                        request_type, model_name, model_version, model_uri,
+                        configuration_version, requested_count
+                    FROM scoring_runs
+                    WHERE idempotency_key = %s
+                    """,
+                    (idempotency_key,),
+                ).fetchone()
+                if existing is None:
+                    raise RuntimeError("Idempotent scoring run could not be resolved")
+                expected = (
+                    request_type,
+                    metadata.model_name,
+                    metadata.model_version,
+                    metadata.model_uri,
+                    metadata.configuration_version,
+                    len(results),
+                )
+                actual = (
+                    existing["request_type"],
+                    existing["model_name"],
+                    existing["model_version"],
+                    existing["model_uri"],
+                    existing["configuration_version"],
+                    existing["requested_count"],
+                )
+                if actual != expected:
+                    raise ValueError("Idempotency key was already used for another scoring run")
+                prediction_rows = db_connection.execute(
+                    """
+                    SELECT prediction_id, prediction_timestamp
+                    FROM risk_predictions
+                    WHERE scoring_run_id = %s
+                    ORDER BY prediction_id
+                    """,
+                    (existing["scoring_run_id"],),
+                ).fetchall()
+                if len(prediction_rows) != len(results):
+                    raise RuntimeError("Existing scoring run has an incomplete result set")
+                return StoredScoringRun(
+                    scoring_run_id=existing["scoring_run_id"],
+                    run_reference=existing["run_reference"],
+                    prediction_ids=tuple(row["prediction_id"] for row in prediction_rows),
+                    prediction_timestamp=prediction_rows[0]["prediction_timestamp"],
+                )
             prediction_ids: list[int] = []
             for result in results:
                 prediction = db_connection.execute(

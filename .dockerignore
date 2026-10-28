@@ -1,0 +1,15 @@
+.git
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+.env
+airflow/logs
+data/raw
+data/processed
+mlartifacts
+mlflow.db
+models/*.joblib
+models/*.pkl
+reports/airflow

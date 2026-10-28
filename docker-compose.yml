@@ -1,0 +1,50 @@
+services:
+  airflow:
+    build:
+      context: .
+      dockerfile: airflow/Dockerfile
+    command:
+      - bash
+      - -c
+      - >-
+        python -m src.migrations up &&
+        if [ ! -f /opt/airflow/state/.credit-risk-model-registered ]; then
+          python -m src.mlflow_tracking &&
+          touch /opt/airflow/state/.credit-risk-model-registered;
+        fi &&
+        exec airflow standalone
+    restart: unless-stopped
+    environment:
+      AIRFLOW_HOME: /opt/airflow/state
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/project/airflow
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: admin:admin
+      AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
+      PYTHONPATH: /opt/airflow/project
+      CREDIT_RISK_SOURCE_PATH: /opt/airflow/project/data/raw/banking_data.csv
+      CREDIT_RISK_BATCH_LIMIT: ${CREDIT_RISK_BATCH_LIMIT:-}
+      POSTGRES_HOST: ${AIRFLOW_PROJECT_POSTGRES_HOST:-host.docker.internal}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_DB: ${POSTGRES_DB:-credit_risk}
+      POSTGRES_USER: ${POSTGRES_USER:-credit_risk_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_SSLMODE: ${POSTGRES_SSLMODE:-prefer}
+      MLFLOW_TRACKING_URI: sqlite:////opt/airflow/state/mlflow.db
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./:/opt/airflow/project
+      - airflow-state:/opt/airflow/state
+      - ./airflow/logs:/opt/airflow/logs
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  airflow-state:

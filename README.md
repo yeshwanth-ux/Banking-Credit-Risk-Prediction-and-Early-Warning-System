@@ -122,6 +122,10 @@ Persisted scoring runs, protected risk-record retrieval, portfolio aggregation,
 and report filters are documented in
 [docs/risk_reporting.md](docs/risk_reporting.md).
 
+The daily Apache Airflow ingestion, validation, feature, scoring, persistence,
+and report-refresh workflow is documented in
+[docs/airflow_pipeline.md](docs/airflow_pipeline.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory
