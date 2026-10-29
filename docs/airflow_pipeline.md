@@ -47,6 +47,12 @@ and PostgreSQL upserts, so repeated ingestion updates those records rather than
 duplicating them. Feature and prediction artifacts are written atomically into
 a deterministic run directory.
 
+The final report task reads persisted scoring history and atomically exports a
+portfolio summary CSV, a restricted High Risk investigation queue, an observed
+period trend CSV, and a readable HTML report. It does not create simulated
+periods. Interpretation and analyst verification requirements are documented
+in `docs/risk_report_interpretation.md`.
+
 ## Local startup
 
 Prerequisites are Docker Desktop with Docker Compose v2 and the configured

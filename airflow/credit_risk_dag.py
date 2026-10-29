@@ -114,7 +114,7 @@ def credit_risk_daily_pipeline():  # noqa: ANN202
         suffix = validation_summary["pipeline_run_key"].rsplit(":", maxsplit=1)[-1]
         return refresh_reports_task(
             persistence_summary,
-            output_path=DEFAULT_REPORT_ROOT / suffix / "portfolio_summary.json",
+            output_directory=DEFAULT_REPORT_ROOT / suffix,
         )
 
     validation = validate_source()

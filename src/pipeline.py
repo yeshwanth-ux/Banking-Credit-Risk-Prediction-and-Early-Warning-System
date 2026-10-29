@@ -17,6 +17,7 @@ from src.feature_engineering import build_feature_datasets
 from src.ingestion import ingest, read_source, validate_records
 from src.model_registry import RegisteredModelBundle, load_registered_model
 from src.predict import FEATURE_COLUMNS, RuleInputs
+from src.reporting import generate_portfolio_reports
 from src.risk_reporting import (
     PostgresRiskRepository,
     PredictionResultWrite,
@@ -233,23 +234,18 @@ def persist_predictions_task(
 def refresh_reports_task(
     persistence_summary: dict[str, Any],
     *,
-    output_path: Path,
+    output_directory: Path,
     repository: RiskRepository | None = None,
 ) -> dict[str, Any]:
-    """Regenerate the latest portfolio summary after successful persistence."""
+    """Export analyst CSV and HTML reports after successful persistence."""
 
     selected_repository = repository or PostgresRiskRepository()
-    summary = selected_repository.portfolio_summary(RiskRecordFilters())
-    payload = {
-        "generated_at_utc": datetime.now(tz=UTC).isoformat(),
-        "source_scoring_run": persistence_summary["run_reference"],
-        **summary,
-    }
-    _write_json(output_path, payload)
-    result = {
-        "portfolio_report": str(output_path.resolve()),
-        "total_accounts": summary["total_accounts"],
-        "risk_counts": summary["risk_counts"],
-    }
+    generated = generate_portfolio_reports(
+        output_directory,
+        filters=RiskRecordFilters(),
+        repository=selected_repository,
+    )
+    result = generated.to_dict()
+    result["source_scoring_run"] = persistence_summary["run_reference"]
     LOGGER.info("Portfolio report refreshed: %s", result)
     return result

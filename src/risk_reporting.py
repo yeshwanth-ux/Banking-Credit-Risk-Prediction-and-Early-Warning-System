@@ -92,6 +92,11 @@ class RiskRepository(Protocol):
 
     def portfolio_summary(self, filters: RiskRecordFilters) -> dict[str, Any]: ...
 
+    def fetch_scoring_history(
+        self,
+        filters: RiskRecordFilters,
+    ) -> list[dict[str, Any]]: ...
+
 
 def _filter_sql(filters: RiskRecordFilters) -> tuple[list[str], list[Any]]:
     filters.validate()
@@ -212,6 +217,41 @@ def portfolio_summary_query(filters: RiskRecordFilters) -> tuple[str, list[Any]]
     )
 
 
+def scoring_history_query(filters: RiskRecordFilters) -> tuple[str, list[Any]]:
+    """Select report-safe scoring history without feature snapshots or customer data."""
+
+    clauses, parameters = _filter_sql(filters)
+    if filters.risk_category is not None:
+        clauses.append("prediction.risk_band = %s")
+        parameters.append(filters.risk_category)
+    where_sql = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+    return (
+        f"""
+        SELECT
+            prediction.prediction_id,
+            scoring_run.run_reference AS scoring_run_reference,
+            prediction.reference_identifier,
+            loan.loan_reference,
+            loan.loan_status,
+            prediction.prediction_timestamp,
+            prediction.model_name,
+            prediction.model_version,
+            prediction.model_uri,
+            prediction.configuration_version,
+            prediction.default_probability,
+            prediction.risk_band,
+            prediction.warning_reasons
+        FROM risk_predictions AS prediction
+        LEFT JOIN loans AS loan ON loan.loan_id = prediction.loan_id
+        LEFT JOIN scoring_runs AS scoring_run
+            ON scoring_run.scoring_run_id = prediction.scoring_run_id
+        {where_sql}
+        ORDER BY prediction.prediction_timestamp, prediction.prediction_id
+        """,
+        parameters,
+    )
+
+
 def execute_risk_records_query(
     db_connection: Connection,
     filters: RiskRecordFilters,
@@ -246,6 +286,14 @@ def execute_portfolio_summary_query(
         "earliest_prediction_timestamp": row["earliest_prediction_timestamp"],
         "latest_prediction_timestamp": row["latest_prediction_timestamp"],
     }
+
+
+def execute_scoring_history_query(
+    db_connection: Connection,
+    filters: RiskRecordFilters,
+) -> list[dict[str, Any]]:
+    statement, parameters = scoring_history_query(filters)
+    return list(db_connection.execute(statement, parameters).fetchall())
 
 
 class PostgresRiskRepository:
@@ -417,3 +465,10 @@ class PostgresRiskRepository:
     def portfolio_summary(self, filters: RiskRecordFilters) -> dict[str, Any]:
         with connection(self.settings) as db_connection:
             return execute_portfolio_summary_query(db_connection, filters)
+
+    def fetch_scoring_history(
+        self,
+        filters: RiskRecordFilters,
+    ) -> list[dict[str, Any]]:
+        with connection(self.settings) as db_connection:
+            return execute_scoring_history_query(db_connection, filters)

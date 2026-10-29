@@ -126,6 +126,10 @@ The daily Apache Airflow ingestion, validation, feature, scoring, persistence,
 and report-refresh workflow is documented in
 [docs/airflow_pipeline.md](docs/airflow_pipeline.md).
 
+Pandas report exports, observed-period trend safeguards, and the required
+analyst verification workflow are documented in
+[docs/risk_report_interpretation.md](docs/risk_report_interpretation.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory

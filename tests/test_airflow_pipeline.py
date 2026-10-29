@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import runpy
 import sys
 from dataclasses import dataclass
@@ -124,6 +123,26 @@ class IdempotentRepository:
             "latest_prediction_timestamp": datetime(2026, 10, 28, tzinfo=UTC),
         }
 
+    def fetch_scoring_history(self, filters):  # noqa: ANN001, ANN201
+        return [
+            {
+                "prediction_id": prediction_id,
+                "scoring_run_reference": "pipeline-run-21",
+                "reference_identifier": reference,
+                "loan_reference": None,
+                "loan_status": None,
+                "prediction_timestamp": datetime(2026, 10, 28, 2, 0, tzinfo=UTC),
+                "model_name": "PipelineTest",
+                "model_version": "4",
+                "model_uri": "models:/PipelineTest@champion",
+                "configuration_version": "pipeline-test-config",
+                "default_probability": 0.6,
+                "risk_band": "medium",
+                "warning_reasons": [],
+            }
+            for prediction_id, reference in ((201, "record-a"), (202, "record-b"))
+        ]
+
 
 def test_small_dataset_prediction_persistence_and_report_are_repeatable(
     tmp_path: Path,
@@ -155,18 +174,20 @@ def test_small_dataset_prediction_persistence_and_report_are_repeatable(
         idempotency_key=key,
         repository=repository,
     )
-    report_path = tmp_path / "portfolio_summary.json"
+    report_directory = tmp_path / "reports"
     report = refresh_reports_task(
         second,
-        output_path=report_path,
+        output_directory=report_directory,
         repository=repository,
     )
 
     assert prediction_summary["record_count"] == 2
     assert first == second
     assert repository.insert_calls == 1
-    assert report["risk_counts"] == {"high": 0, "medium": 2, "low": 0}
-    assert json.loads(report_path.read_text(encoding="utf-8"))["total_accounts"] == 2
+    assert report["latest_account_count"] == 2
+    assert report["high_risk_account_count"] == 0
+    assert Path(report["summary_csv"]).is_file()
+    assert Path(report["html_report"]).is_file()
 
 
 def test_source_validation_is_deterministic_for_small_valid_file(tmp_path: Path) -> None:

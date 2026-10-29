@@ -3,16 +3,20 @@ from __future__ import annotations
 import os
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from pathlib import Path
 
+import pandas as pd
 import pytest
 from psycopg.types.json import Jsonb
 
 from src.database import connection
 from src.feature_engineering import OPERATIONAL_SOURCE_QUERY
+from src.reporting import generate_portfolio_reports
 from src.risk_reporting import (
     RiskRecordFilters,
     execute_portfolio_summary_query,
     execute_risk_records_query,
+    execute_scoring_history_query,
 )
 
 pytestmark = pytest.mark.skipif(
@@ -232,7 +236,7 @@ def test_trusted_dataset_excludes_future_repayments() -> None:
             assert feature_source["account_activity_count_90d"] == 0
 
 
-def test_portfolio_summary_matches_latest_prediction_records() -> None:
+def test_portfolio_summary_matches_latest_prediction_records(tmp_path: Path) -> None:
     unique_suffix = datetime.now(tz=UTC).strftime("%Y%m%d%H%M%S%f")
     first_timestamp = datetime(2026, 10, 20, tzinfo=UTC)
     latest_timestamp = datetime(2026, 10, 21, tzinfo=UTC)
@@ -354,11 +358,20 @@ def test_portfolio_summary_matches_latest_prediction_records() -> None:
             )
             summary = execute_portfolio_summary_query(db_connection, filters)
             records = execute_risk_records_query(db_connection, filters, limit=100)
+            history = execute_scoring_history_query(db_connection, filters)
+            reports = generate_portfolio_reports(tmp_path, records=history)
+            report_summary = pd.read_csv(reports.summary_csv).set_index("risk_band")
 
             assert summary["total_accounts"] == len(records) == 3
             assert summary["risk_counts"] == {"high": 0, "medium": 1, "low": 2}
             assert sum(summary["risk_counts"].values()) == summary["total_accounts"]
             assert records[0]["prediction_timestamp"] == latest_timestamp
+            assert len(history) == 4
+            assert report_summary["account_count"].to_dict() == {
+                "high": 0,
+                "medium": 1,
+                "low": 2,
+            }
 
             active_summary = execute_portfolio_summary_query(
                 db_connection,
