@@ -40,6 +40,8 @@ class DatasetMetrics:
 def clean_identifier(value: Any) -> str:
     """Normalize a source identifier without changing its semantic characters."""
 
+    if value is None:
+        raise ValueError("Identifier cannot be null")
     cleaned = re.sub(r"\s+", "-", str(value).strip().upper())
     cleaned = re.sub(r"[^A-Z0-9._-]", "", cleaned)
     cleaned = re.sub(r"-+", "-", cleaned).strip("-")

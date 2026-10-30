@@ -19,6 +19,8 @@ def test_clean_identifier_is_repeatable() -> None:
     assert clean_identifier("LOAN-42-A") == "LOAN-42-A"
     with pytest.raises(ValueError, match="empty"):
         clean_identifier(" /// ")
+    with pytest.raises(ValueError, match="null"):
+        clean_identifier(None)
 
 
 def test_clean_optional_text_collapses_whitespace() -> None:

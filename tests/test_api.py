@@ -258,6 +258,19 @@ def test_request_validation_rejects_invalid_and_unknown_fields() -> None:
     assert ("body", "features", "unknown_feature") in locations
 
 
+def test_request_validation_rejects_missing_required_model_input() -> None:
+    application = build_test_application()
+    payload = prediction_payload()
+    payload["features"].pop("duration_months")
+
+    with TestClient(application) as client:
+        response = client.post("/predict", json=payload)
+
+    assert response.status_code == 422
+    locations = {tuple(error["loc"]) for error in response.json()["detail"]}
+    assert ("body", "features", "duration_months") in locations
+
+
 def test_model_load_failure_keeps_health_available_and_blocks_predictions() -> None:
     def failed_loader() -> RegisteredModelBundle:
         raise RuntimeError("registry offline")

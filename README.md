@@ -130,6 +130,9 @@ Pandas report exports, observed-period trend safeguards, and the required
 analyst verification workflow are documented in
 [docs/risk_report_interpretation.md](docs/risk_report_interpretation.md).
 
+Unit, API, PostgreSQL integration, Airflow validation, and complete-suite test
+commands are documented in [docs/testing.md](docs/testing.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory

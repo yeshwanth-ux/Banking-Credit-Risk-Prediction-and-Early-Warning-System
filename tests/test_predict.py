@@ -30,6 +30,16 @@ class FixedProbabilityModel:
         return np.tile([1 - self.probability, self.probability], (len(features), 1))
 
 
+class CountingProbabilityModel(FixedProbabilityModel):
+    def __init__(self, probability: float) -> None:
+        super().__init__(probability)
+        self.call_count = 0
+
+    def predict_proba(self, features: pd.DataFrame) -> np.ndarray:
+        self.call_count += 1
+        return super().predict_proba(features)
+
+
 def eligible_record() -> dict[str, Any]:
     record: dict[str, Any] = {
         "duration_months": 24,
@@ -85,6 +95,29 @@ def test_probability_band_boundaries() -> None:
     assert classify_probability(0.40, 0.40, 0.80) is RiskBand.MEDIUM
     assert classify_probability(0.79, 0.40, 0.80) is RiskBand.MEDIUM
     assert classify_probability(0.80, 0.40, 0.80) is RiskBand.HIGH
+
+
+@pytest.mark.parametrize(
+    ("probability", "expected_band"),
+    [
+        (0.20, RiskBand.LOW),
+        (0.60, RiskBand.MEDIUM),
+        (0.90, RiskBand.HIGH),
+    ],
+)
+def test_valid_model_inference_assigns_each_risk_band(
+    probability: float,
+    expected_band: RiskBand,
+) -> None:
+    model = CountingProbabilityModel(probability)
+
+    result = RiskClassifier(model, configuration()).assess(eligible_record())
+
+    assert result.eligible is True
+    assert result.risk_probability == pytest.approx(probability)
+    assert result.model_band is expected_band
+    assert result.final_band is expected_band
+    assert model.call_count > 0
 
 
 def test_cost_threshold_prefers_lower_weighted_error() -> None:
@@ -166,6 +199,28 @@ def test_missing_or_invalid_features_make_record_ineligible() -> None:
     assert result.eligible is False
     assert result.risk_probability is None
     assert result.final_band is None
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda record: record.pop("duration_months"),
+        lambda record: record.update(age_years="not-a-number"),
+        lambda record: record.update(checking_account_status=None),
+    ],
+    ids=["missing", "invalid", "null"],
+)
+def test_ineligible_inputs_do_not_invoke_model(mutation) -> None:  # noqa: ANN001
+    record = eligible_record()
+    mutation(record)
+    model = CountingProbabilityModel(0.90)
+
+    result = RiskClassifier(model, configuration()).assess(record)
+
+    assert result.eligible is False
+    assert result.eligibility_reasons
+    assert result.risk_probability is None
+    assert model.call_count == 0
 
 
 def test_eligible_record_contains_every_frozen_feature() -> None:
