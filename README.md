@@ -133,6 +133,10 @@ analyst verification workflow are documented in
 Unit, API, PostgreSQL integration, Airflow validation, and complete-suite test
 commands are documented in [docs/testing.md](docs/testing.md).
 
+The Docker Compose stack, persistent volumes, health checks, environment
+configuration, and prediction smoke test are documented in
+[docs/containerization.md](docs/containerization.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory

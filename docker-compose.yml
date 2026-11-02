@@ -1,50 +1,180 @@
+name: banking-credit-risk
+
+x-project-environment: &project-environment
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: ${POSTGRES_DB:-credit_risk}
+  POSTGRES_USER: ${POSTGRES_USER:-credit_risk_app}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the ignored .env file}
+  POSTGRES_SSLMODE: disable
+  POSTGRES_CONNECT_TIMEOUT: "10"
+  POSTGRES_APPLICATION_NAME: banking_credit_risk
+  MLFLOW_TRACKING_URI: http://mlflow:5000
+
 services:
+  postgres:
+    image: postgres:16.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-credit_risk}
+      POSTGRES_USER: ${POSTGRES_USER:-credit_risk_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the ignored .env file}
+    ports:
+      - "${POSTGRES_EXPOSED_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - mlflow
+      - server
+      - --backend-store-uri
+      - sqlite:////app/mlflow-state/mlflow.db
+      - --default-artifact-root
+      - file:///app/mlartifacts
+      - --host
+      - 0.0.0.0
+      - --port
+      - "5000"
+      - --allowed-hosts
+      - mlflow,localhost,127.0.0.1
+    restart: unless-stopped
+    ports:
+      - "${MLFLOW_EXPOSED_PORT:-5000}:5000"
+    volumes:
+      - mlflow-state:/app/mlflow-state
+      - mlflow-artifacts:/app/mlartifacts
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://localhost:5000/health', timeout=5)
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  model-init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - sh
+      - -c
+      - >-
+        python -m src.migrations up &&
+        if [ ! -f /app/mlflow-state/.credit-risk-model-registered ]; then
+          python -m src.mlflow_tracking &&
+          touch /app/mlflow-state/.credit-risk-model-registered;
+        fi
+    environment: *project-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+    volumes:
+      - mlflow-state:/app/mlflow-state
+      - mlflow-artifacts:/app/mlartifacts
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *project-environment
+      APP_ENV: ${APP_ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      RISK_REPORT_API_KEY: ${RISK_REPORT_API_KEY:?Set RISK_REPORT_API_KEY in the ignored .env file}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+      model-init:
+        condition: service_completed_successfully
+    ports:
+      - "${API_EXPOSED_PORT:-8000}:8000"
+    volumes:
+      - mlflow-artifacts:/app/mlartifacts:ro
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://localhost:8000/health', timeout=5)
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
   airflow:
     build:
       context: .
       dockerfile: airflow/Dockerfile
-    command:
-      - bash
-      - -c
-      - >-
-        python -m src.migrations up &&
-        if [ ! -f /opt/airflow/state/.credit-risk-model-registered ]; then
-          python -m src.mlflow_tracking &&
-          touch /opt/airflow/state/.credit-risk-model-registered;
-        fi &&
-        exec airflow standalone
+    command: ["airflow", "standalone"]
     restart: unless-stopped
     environment:
+      <<: *project-environment
       AIRFLOW_HOME: /opt/airflow/state
       AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/project/airflow
       AIRFLOW__CORE__EXECUTOR: SequentialExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: admin:admin
-      AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
+      AIRFLOW__LOGGING__LOGGING_LEVEL: ${LOG_LEVEL:-INFO}
       PYTHONPATH: /opt/airflow/project
       CREDIT_RISK_SOURCE_PATH: /opt/airflow/project/data/raw/banking_data.csv
       CREDIT_RISK_BATCH_LIMIT: ${CREDIT_RISK_BATCH_LIMIT:-}
-      POSTGRES_HOST: ${AIRFLOW_PROJECT_POSTGRES_HOST:-host.docker.internal}
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      POSTGRES_DB: ${POSTGRES_DB:-credit_risk}
-      POSTGRES_USER: ${POSTGRES_USER:-credit_risk_app}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
-      POSTGRES_SSLMODE: ${POSTGRES_SSLMODE:-prefer}
-      MLFLOW_TRACKING_URI: sqlite:////opt/airflow/state/mlflow.db
-    extra_hosts:
-      - host.docker.internal:host-gateway
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+      model-init:
+        condition: service_completed_successfully
     ports:
-      - "8080:8080"
+      - "${AIRFLOW_EXPOSED_PORT:-8080}:8080"
     volumes:
-      - ./:/opt/airflow/project
       - airflow-state:/opt/airflow/state
-      - ./airflow/logs:/opt/airflow/logs
+      - airflow-logs:/opt/airflow/logs
+      - mlflow-artifacts:/app/mlartifacts:ro
+      - report-artifacts:/opt/airflow/project/reports/airflow
+      - ./data/raw:/opt/airflow/project/data/raw:ro
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://localhost:8080/api/v2/monitor/health', timeout=5)
       interval: 30s
       timeout: 10s
       retries: 10
       start_period: 60s
 
 volumes:
+  postgres-data:
+  mlflow-state:
+  mlflow-artifacts:
   airflow-state:
+  airflow-logs:
+  report-artifacts:
