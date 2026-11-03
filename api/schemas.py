@@ -206,3 +206,28 @@ class PortfolioSummaryResponse(ApiModel):
     earliest_prediction_timestamp: datetime | None
     latest_prediction_timestamp: datetime | None
     filters: ReportFiltersResponse
+
+
+class DriftFeatureResponse(ApiModel):
+    feature: str
+    method: Literal["psi", "tvd"]
+    score: float | None
+    sample_count: int = Field(ge=0)
+    status: Literal["stable", "alert", "insufficient_data"]
+
+
+class MonitoringSummaryResponse(ApiModel):
+    request_count: int = Field(ge=0)
+    error_count: int = Field(ge=0)
+    error_rate: float = Field(ge=0, le=1)
+    average_latency_ms: float = Field(ge=0)
+    requests_by_path: dict[str, int]
+    prediction_count: int = Field(ge=0)
+    risk_counts: RiskCounts
+    risk_proportions: RiskPercentages
+    model_version: str
+    last_scoring_timestamp: datetime | None
+    last_scoring_age_seconds: float | None = Field(default=None, ge=0)
+    drift_window_size: int = Field(ge=0)
+    drift_features: list[DriftFeatureResponse]
+    drift_alert_count: int = Field(ge=0)

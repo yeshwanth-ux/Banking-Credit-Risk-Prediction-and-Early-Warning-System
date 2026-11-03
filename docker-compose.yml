@@ -102,6 +102,7 @@ services:
       APP_ENV: ${APP_ENV:-development}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       RISK_REPORT_API_KEY: ${RISK_REPORT_API_KEY:?Set RISK_REPORT_API_KEY in the ignored .env file}
+      RISK_ROLE_API_KEYS: ${RISK_ROLE_API_KEYS:-}
     depends_on:
       postgres:
         condition: service_healthy

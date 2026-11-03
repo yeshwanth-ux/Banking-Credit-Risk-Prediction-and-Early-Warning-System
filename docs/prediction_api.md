@@ -51,6 +51,14 @@ order. Invalid fields, missing fields, unknown fields, and out-of-range values
 receive FastAPI's structured HTTP 422 validation response. Loan references must
 be unique within one batch. The complete batch is stored as one scoring run.
 
+### `GET /monitoring/summary`
+
+Returns privacy-safe request, latency, error, risk-distribution, model-version,
+scoring-age, and input-drift summaries. It requires an API key with the
+`monitor` or `admin` role. Aggregate portfolio reports require `risk_viewer`,
+`risk_analyst`, or `admin`; account-level risk records require `risk_analyst`
+or `admin`.
+
 Example request:
 
 ```json

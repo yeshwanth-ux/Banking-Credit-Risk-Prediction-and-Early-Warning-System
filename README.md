@@ -137,6 +137,10 @@ The Docker Compose stack, persistent volumes, health checks, environment
 configuration, and prediction smoke test are documented in
 [docs/containerization.md](docs/containerization.md).
 
+Privacy-safe operational metrics, drift monitoring, scoring freshness,
+role-aware report access, and review or retraining triggers are documented in
+[docs/model_monitoring_security.md](docs/model_monitoring_security.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory

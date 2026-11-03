@@ -160,12 +160,16 @@ def build_test_application(
     *,
     repository: MemoryRiskRepository | None = None,
     api_key: str = "report-secret",
+    role_api_keys: dict[str, set[str]] | None = None,
+    minimum_drift_samples: int = 30,
 ):  # noqa: ANN201
     selected_repository = repository or MemoryRiskRepository()
     return create_app(
         model_loader=loader,
         repository_factory=lambda: selected_repository,
         report_api_key=api_key,
+        role_api_keys=role_api_keys,
+        minimum_drift_samples=minimum_drift_samples,
     )
 
 
@@ -291,7 +295,9 @@ def test_model_load_failure_keeps_health_available_and_blocks_predictions() -> N
     }
 
 
-def test_prediction_failure_returns_structured_error_without_internal_details() -> None:
+def test_prediction_failure_returns_structured_error_without_internal_details(
+    caplog,
+) -> None:  # noqa: ANN001
     bundle = model_bundle()
     bundle = RegisteredModelBundle(
         pipeline=FailingPipeline(),
@@ -304,8 +310,9 @@ def test_prediction_failure_returns_structured_error_without_internal_details() 
     )
     application = build_test_application(loader=lambda: bundle)
 
-    with TestClient(application, raise_server_exceptions=False) as client:
-        response = client.post("/predict", json=prediction_payload())
+    with caplog.at_level("INFO", logger="api.main"):
+        with TestClient(application, raise_server_exceptions=False) as client:
+            response = client.post("/predict", json=prediction_payload())
 
     assert response.status_code == 500
     assert response.json() == {
@@ -313,6 +320,10 @@ def test_prediction_failure_returns_structured_error_without_internal_details() 
         "message": "The model could not score this loan",
     }
     assert "internal model details" not in response.text
+    logs = "\n".join(record.getMessage() for record in caplog.records)
+    assert "prediction_request_failed" in logs
+    assert "internal model details" not in logs
+    assert "credit_amount_dm" not in logs
 
 
 def test_openapi_documents_prediction_endpoints_and_schemas() -> None:
@@ -390,3 +401,89 @@ def test_report_authentication_must_be_configured() -> None:
 
     assert response.status_code == 503
     assert response.json()["error"] == "authentication_unavailable"
+
+
+def test_role_aware_report_and_monitoring_access() -> None:
+    application = build_test_application(
+        role_api_keys={
+            "viewer-key": {"risk_viewer"},
+            "analyst-key": {"risk_analyst"},
+            "monitor-key": {"monitor"},
+        }
+    )
+
+    with TestClient(application) as client:
+        viewer_summary = client.get(
+            "/reports/portfolio",
+            headers={"X-API-Key": "viewer-key"},
+        )
+        viewer_records = client.get(
+            "/risk-records",
+            headers={"X-API-Key": "viewer-key"},
+        )
+        analyst_records = client.get(
+            "/risk-records",
+            params={"limit": 25},
+            headers={"X-API-Key": "analyst-key"},
+        )
+        viewer_monitoring = client.get(
+            "/monitoring/summary",
+            headers={"X-API-Key": "viewer-key"},
+        )
+        monitor_summary = client.get(
+            "/monitoring/summary",
+            headers={"X-API-Key": "monitor-key"},
+        )
+
+    assert viewer_summary.status_code == 200
+    assert viewer_records.status_code == 403
+    assert analyst_records.status_code == 200
+    assert viewer_monitoring.status_code == 403
+    assert monitor_summary.status_code == 200
+
+
+def test_monitoring_summary_tracks_requests_risk_model_and_scoring_age() -> None:
+    application = build_test_application(
+        role_api_keys={"monitor-key": {"monitor"}},
+        minimum_drift_samples=1,
+    )
+
+    with TestClient(application) as client:
+        prediction = client.post("/predict", json=prediction_payload("PRIVATE-LOAN-99"))
+        summary = client.get(
+            "/monitoring/summary",
+            headers={"X-API-Key": "monitor-key"},
+        )
+
+    body = summary.json()
+    assert prediction.status_code == 200
+    assert summary.status_code == 200
+    assert body["request_count"] == 1
+    assert body["error_count"] == 0
+    assert body["average_latency_ms"] > 0
+    assert body["requests_by_path"] == {"/predict": 1}
+    assert body["prediction_count"] == 1
+    assert body["risk_counts"] == {"high": 0, "medium": 1, "low": 0}
+    assert body["model_version"] == "3"
+    assert body["last_scoring_age_seconds"] >= 0
+    assert body["drift_window_size"] == 1
+    assert len(body["drift_features"]) == 23
+
+
+def test_structured_logs_exclude_request_values(caplog) -> None:  # noqa: ANN001
+    application = build_test_application()
+
+    with caplog.at_level("INFO", logger="api.main"):
+        with TestClient(application) as client:
+            response = client.post(
+                "/predict",
+                json=prediction_payload("SENSITIVE-REFERENCE-123"),
+            )
+
+    assert response.status_code == 200
+    logs = "\n".join(record.getMessage() for record in caplog.records)
+    assert "http_request_completed" in logs
+    assert "prediction_completed" in logs
+    assert "SENSITIVE-REFERENCE-123" not in logs
+    assert "credit_amount_dm" not in logs
+    assert "4000" not in logs
