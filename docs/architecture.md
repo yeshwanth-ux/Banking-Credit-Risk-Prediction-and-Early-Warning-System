@@ -23,6 +23,9 @@ flowchart LR
     H --> J
     J --> K[Portfolio reports]
     J --> L[Early-warning review queue]
+    H --> N[Operational metrics and drift checks]
+    J --> N
+    N --> O[Manual review and retraining assessment]
     M[Apache Airflow] --> B
     M --> E
     M --> I
@@ -85,7 +88,8 @@ which avoids unsupported native-Windows deployment.
 
 - Secrets come from environment variables and are never stored in source files.
 - Raw customer data stays outside Git and is accessed only by authorized users.
-- Logs use reference identifiers and exclude raw personal or financial details.
+- Structured logs exclude reference identifiers, request bodies, probabilities,
+  and raw personal or financial details.
 - API access to customer-level predictions requires authentication and roles.
 - Each prediction stores its model version, feature timestamp, and scoring time.
 - Model output supports human review and does not automatically approve or deny
@@ -93,7 +97,9 @@ which avoids unsupported native-Windows deployment.
 
 ## Deployment view
 
-Docker Compose will eventually run PostgreSQL, FastAPI, MLflow, and Airflow as
-separate services on a private network. Persistent volumes retain database and
-experiment artifacts. Health checks and explicit service dependencies control
-startup order.
+Docker Compose runs PostgreSQL, FastAPI, MLflow, Airflow, and a one-shot
+migration/model-registration initializer as separate services on a private
+network. Persistent volumes retain database, experiment, scheduler, log, and
+report artifacts. Health checks and explicit service dependencies control
+startup order. The API image runs as a non-root user and report endpoints use
+server-side API-key roles.

@@ -73,7 +73,7 @@ sends one schema-valid prediction to `/predict`, and verifies the probability,
 risk band, and model-version fields.
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\smoke_test_compose.py
+.\.venv\Scripts\python.exe -m scripts.smoke_test_compose
 ```
 
 The request uses a synthetic reference and is persisted in the local

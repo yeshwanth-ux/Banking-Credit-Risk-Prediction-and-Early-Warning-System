@@ -14,13 +14,15 @@ teams.
 - Serve predictions through FastAPI and automate batch workflows with Airflow.
 - Track model experiments with MLflow and generate portfolio risk reports.
 
-## Prediction target
+## Prediction targets
 
-The primary target is `default_within_90_days`, a binary label indicating
-whether a loan enters default during the 90 days after a prediction timestamp.
-Only information available at or before that timestamp may be used as a model
-feature. The complete definition, eligibility rules, and leakage controls are
-documented in [docs/target_definition.md](docs/target_definition.md).
+The intended operational target is `default_within_90_days`, a binary label
+indicating whether a loan enters default during the 90 days after a prediction
+timestamp. Only information available at or before that timestamp may be used.
+The public research model instead predicts South German Credit `bad_credit`
+(contract non-compliance), so its probability is a prototype proxy—not a
+validated 90-day probability of default. The definitions and leakage controls
+are documented in [docs/target_definition.md](docs/target_definition.md).
 
 ## Technology stack
 
@@ -50,7 +52,7 @@ documented in [docs/target_definition.md](docs/target_definition.md).
 |-- src/                 # Data, feature, training, evaluation, and prediction code
 |-- tests/               # Automated tests
 |-- .env.example         # Safe configuration template
-|-- Dockerfile           # API image definition, implemented in the Docker phase
+|-- Dockerfile           # Non-root FastAPI/MLflow runtime image
 |-- pyproject.toml       # Project and development-tool configuration
 `-- requirements.txt     # Python dependencies
 ```
@@ -141,6 +143,12 @@ Privacy-safe operational metrics, drift monitoring, scoring freshness,
 role-aware report access, and review or retraining triggers are documented in
 [docs/model_monitoring_security.md](docs/model_monitoring_security.md).
 
+The executable raw-to-report workflow, verified Day 19 evidence, and failure
+checks are documented in [docs/end_to_end_runbook.md](docs/end_to_end_runbook.md).
+Dataset assumptions, exact validation metrics, and known limitations are
+recorded in
+[docs/project_assumptions_limitations.md](docs/project_assumptions_limitations.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory
@@ -154,12 +162,21 @@ Download the ignored raw data from the official source:
 .\.venv\Scripts\python.exe -m src.download_data
 ```
 
-## Development status
+## End-to-end verification
 
-Day 1 establishes the project structure, dependency manifests, environment
-template, target definition, and high-level architecture. Functional pipeline,
-database, modeling, API, orchestration, and reporting components are developed
-in later milestones.
+The Day 19 local run validated all 1,000 raw rows, generated 1,000 prototype
+feature rows, persisted an idempotent 10-record scoring batch, retrieved all 10
+latest predictions through authenticated FastAPI endpoints, rejected invalid
+API input with HTTP 422, and reconciled the final CSV and HTML reports. Run it
+again with:
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.run_end_to_end --max-records 10
+```
+
+Docker was unavailable on the verification host; Docker Compose configuration
+and image contracts are tested, but real container startup remains an explicit
+environment-specific verification step.
 
 ## Data and responsible use
 
