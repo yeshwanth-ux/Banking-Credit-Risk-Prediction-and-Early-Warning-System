@@ -24,8 +24,8 @@
 The reproducible split contains 600 training, 200 validation, and 200 held-out
 test records, each with a 30% `bad_credit` rate. Preprocessing is fitted only on
 training data. Day 9 model selection uses five-fold stratified cross-validation
-and validation average precision; the held-out test split is explicitly not
-used for selection or reported as a final unbiased performance estimate.
+and validation average precision. The test split was not used for model,
+preprocessing, or threshold selection and was evaluated once for v1.0.0.
 
 The selected logistic-regression prototype produced these validation results at
 the evaluation threshold of 0.50:
@@ -45,6 +45,27 @@ These figures describe a 200-row validation sample and have material sampling
 uncertainty. The operational risk thresholds (0.44 Medium and 0.84 High) were
 selected from validation cost assumptions and are not the 0.50 evaluation
 threshold. They require recalibration and governance for any new population.
+
+### Final untouched-test result
+
+The frozen logistic-regression model was evaluated once on November 5, 2026 at
+the validation-selected 0.44 review threshold:
+
+| Metric | Test value |
+|---|---:|
+| ROC-AUC | 0.8143 |
+| PR-AUC | 0.6594 |
+| Precision | 0.4842 |
+| Recall | 0.7667 |
+| F1 | 0.5935 |
+| Brier score | 0.1739 |
+| Expected calibration error | 0.1418 |
+| True negatives / false positives | 91 / 49 |
+| False negatives / true positives | 14 / 46 |
+
+The immutable result records the model and test-data SHA-256 hashes in
+`reports/final_test_evaluation.json`. The small test sample still cannot
+establish production performance or fairness.
 
 ## System limitations
 

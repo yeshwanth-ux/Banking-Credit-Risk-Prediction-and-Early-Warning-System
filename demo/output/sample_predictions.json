@@ -1,0 +1,128 @@
+{
+  "demo_version": "1.0.0",
+  "generated_at_utc": "2026-11-05T11:16:53.232627+00:00",
+  "notice": "Synthetic demonstration only; not real customers and not validated lending predictions.",
+  "ingestion": {
+    "rows_read": 3,
+    "rows_accepted": 3,
+    "rows_rejected": 0
+  },
+  "predictions": [
+    {
+      "loan_reference": "DEMO-LOWER-SIGNAL",
+      "predicted_bad_credit_probability": 0.030960614400968915,
+      "probability_label": "prototype bad-credit risk probability",
+      "model_risk_band": "low",
+      "final_risk_band": "low",
+      "model_reasons": [
+        "Modeled risk 3.1% is below the 44% review threshold."
+      ],
+      "rule_warnings": [],
+      "model_version": "1",
+      "configuration_version": "risk-classification-1.0.0",
+      "target_definition": "South German Credit bad_credit contract-compliance outcome; prototype proxy only, not default within 90 days"
+    },
+    {
+      "loan_reference": "DEMO-REVIEW-SIGNAL",
+      "predicted_bad_credit_probability": 0.6232291564932221,
+      "probability_label": "prototype bad-credit risk probability",
+      "model_risk_band": "medium",
+      "final_risk_band": "medium",
+      "model_reasons": [
+        "Modeled risk 62.3% is between the 44% review threshold and 84% high-risk threshold."
+      ],
+      "rule_warnings": [
+        {
+          "code": "missed_payment",
+          "severity": "medium",
+          "reason": "There are 1 unpaid installments as of the prediction date.",
+          "evidence": {
+            "missed_payment_count": 1
+          }
+        },
+        {
+          "code": "increasing_missed_payments",
+          "severity": "medium",
+          "reason": "Missed payments increased since the prior observation.",
+          "evidence": {
+            "current": 1,
+            "previous": 0
+          }
+        },
+        {
+          "code": "worsening_repayment_delay",
+          "severity": "medium",
+          "reason": "Maximum repayment delay increased by 30 days.",
+          "evidence": {
+            "current_days": 35,
+            "previous_days": 5
+          }
+        }
+      ],
+      "model_version": "1",
+      "configuration_version": "risk-classification-1.0.0",
+      "target_definition": "South German Credit bad_credit contract-compliance outcome; prototype proxy only, not default within 90 days"
+    },
+    {
+      "loan_reference": "DEMO-HIGH-SIGNAL",
+      "predicted_bad_credit_probability": 0.9068562548862343,
+      "probability_label": "prototype bad-credit risk probability",
+      "model_risk_band": "high",
+      "final_risk_band": "high",
+      "model_reasons": [
+        "Modeled risk 90.7% meets the 84% high-risk threshold."
+      ],
+      "rule_warnings": [
+        {
+          "code": "severe_delinquency",
+          "severity": "high",
+          "reason": "Repayment is 95 days past due, meeting the 90-day severe-delinquency rule.",
+          "evidence": {
+            "maximum_days_past_due": 95
+          }
+        },
+        {
+          "code": "increasing_missed_payments",
+          "severity": "medium",
+          "reason": "Missed payments increased since the prior observation.",
+          "evidence": {
+            "current": 3,
+            "previous": 1
+          }
+        },
+        {
+          "code": "increasing_debt_burden",
+          "severity": "medium",
+          "reason": "Debt-to-income burden is high and increased since the prior observation.",
+          "evidence": {
+            "current_ratio": 0.58,
+            "previous_ratio": 0.39,
+            "increase": 0.18999999999999995
+          }
+        },
+        {
+          "code": "previous_default_history",
+          "severity": "high",
+          "reason": "At least one prior loan met the historical default rule before scoring.",
+          "evidence": {
+            "previous_default_count": 1
+          }
+        }
+      ],
+      "model_version": "1",
+      "configuration_version": "risk-classification-1.0.0",
+      "target_definition": "South German Credit bad_credit contract-compliance outcome; prototype proxy only, not default within 90 days"
+    }
+  ],
+  "reports": {
+    "output_directory": "demo/output",
+    "summary_csv": "demo/output/portfolio_risk_summary.csv",
+    "high_risk_csv": "demo/output/high_risk_accounts.csv",
+    "trends_csv": "demo/output/risk_trends.csv",
+    "html_report": "demo/output/portfolio_risk_report.html",
+    "latest_account_count": 3,
+    "high_risk_account_count": 1,
+    "observed_period_count": 1,
+    "trend_status": "insufficient_observed_periods"
+  }
+}

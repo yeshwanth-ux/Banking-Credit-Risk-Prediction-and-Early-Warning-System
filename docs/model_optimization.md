@@ -48,3 +48,7 @@ Generate splits and baseline results first, then optimize:
 Optimized pipelines are saved as ignored local `.joblib` files. Structured model
 results, feature importance, example explanations, Markdown findings, and figures
 are written under `reports/`.
+
+The held-out test split remained unopened during optimization and threshold
+selection. It was evaluated once at release; see
+`reports/final_test_evaluation.md` for the immutable v1.0.0 result.

@@ -1,0 +1,37 @@
+{
+  "evaluation_version": "1.0.0",
+  "evaluation_status": "completed_once",
+  "evaluated_at_utc": "2026-11-05T11:08:37.681567+00:00",
+  "dataset": "South German Credit research prototype",
+  "target": "bad_credit",
+  "test_rows": 200,
+  "test_bad_credit_rate": 0.3,
+  "test_data_sha256": "19e7332687e12d1842d093e06b976b5c79f055a284be66c4c492cf9cf90651c2",
+  "model_version": "optimized-logistic-regression-1.0.0",
+  "model_sha256": "02cb681db295e5ce85a71d21d1f6e3bb2e8117915257ce6ed4677496fee479e8",
+  "configuration_version": "risk-classification-1.0.0",
+  "decision_threshold": 0.44,
+  "threshold_source": "validation cost analysis; not selected on test data",
+  "test_metrics": {
+    "roc_auc": 0.8142857142857143,
+    "pr_auc": 0.6594382855374817,
+    "precision": 0.4842105263157895,
+    "recall": 0.7666666666666667,
+    "f1_score": 0.5935483870967742,
+    "threshold": 0.44,
+    "true_negatives": 91,
+    "false_positives": 49,
+    "false_negatives": 14,
+    "true_positives": 46,
+    "false_positive_rate": 0.35,
+    "false_negative_rate": 0.23333333333333334,
+    "predicted_positive_rate": 0.475
+  },
+  "calibration": {
+    "brier_score": 0.17392784485405172,
+    "expected_calibration_error": 0.1417799313851182,
+    "bins": 10,
+    "calibration_table": "reports/final_test_calibration.csv"
+  },
+  "test_split_used_for_model_or_threshold_selection": false
+}

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio Credit Risk Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem auto; max-width: 1100px; color: #17202a; }
+    h1, h2 { color: #17365d; }
+    .notice { background: #fff4ce; border-left: 5px solid #d69e00; padding: 1rem; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; }
+    th, td { border: 1px solid #ccd4dd; padding: .55rem; text-align: left; }
+    th { background: #eaf0f6; }
+    .empty { color: #5f6b76; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Portfolio Credit Risk and Early-Warning Report</h1>
+  <p><strong>Generated:</strong> 2026-11-05T11:16:53.232627+00:00</p>
+  <div class="notice"><strong>Research prototype:</strong> probabilities describe the configured
+  prototype target. Risk bands and warnings support investigation and do not constitute an
+  automated lending decision.</div>
+  <h2>Latest portfolio risk summary</h2>
+  <table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>risk_band</th>
+      <th>account_count</th>
+      <th>portfolio_proportion</th>
+      <th>average_default_probability</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>high</td>
+      <td>1</td>
+      <td>0.3333</td>
+      <td>0.9069</td>
+    </tr>
+    <tr>
+      <td>medium</td>
+      <td>1</td>
+      <td>0.3333</td>
+      <td>0.6232</td>
+    </tr>
+    <tr>
+      <td>low</td>
+      <td>1</td>
+      <td>0.3333</td>
+      <td>0.0310</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>High Risk accounts requiring investigation</h2>
+  <table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>reference_identifier</th>
+      <th>loan_reference</th>
+      <th>loan_status</th>
+      <th>prediction_timestamp</th>
+      <th>default_probability</th>
+      <th>warning_reasons</th>
+      <th>model_name</th>
+      <th>model_version</th>
+      <th>configuration_version</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>DEMO-HIGH-SIGNAL</td>
+      <td>DEMO-HIGH-SIGNAL</td>
+      <td>demonstration</td>
+      <td>2026-11-05 11:16:53.232627+00:00</td>
+      <td>0.906856</td>
+      <td>Repayment is 95 days past due, meeting the 90-day severe-delinquency rule. | Missed payments increased since the prior observation. | Debt-to-income burden is high and increased since the prior observation. | At least one prior loan met the historical default rule before scoring.</td>
+      <td>CreditRiskEarlyWarning</td>
+      <td>1</td>
+      <td>risk-classification-1.0.0</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>Observed scoring-period trends</h2>
+  <p>Only one observed scoring period is available. No historical trend conclusion is supported. No simulated period has been presented as history.</p>
+  <table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>scoring_period</th>
+      <th>total_accounts</th>
+      <th>high_count</th>
+      <th>medium_count</th>
+      <th>low_count</th>
+      <th>high_proportion</th>
+      <th>medium_proportion</th>
+      <th>low_proportion</th>
+      <th>average_default_probability</th>
+      <th>data_status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2026-11-05 00:00:00+00:00</td>
+      <td>3</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0.3333</td>
+      <td>0.3333</td>
+      <td>0.3333</td>
+      <td>0.5203</td>
+      <td>insufficient_observed_periods</td>
+    </tr>
+  </tbody>
+</table>
+  <h2>Analyst verification checklist</h2>
+  <ol>
+    <li>Confirm the report date range, account population, loan status, model version,
+    and configuration version.</li>
+    <li>Reconcile High Risk accounts with authorized loan and repayment systems before
+    taking action.</li>
+    <li>Review probability drivers separately from rule-based warning reasons and confirm
+    every input was available at prediction time.</li>
+    <li>Check missing data, source freshness, model calibration, fairness monitoring, and
+    threshold governance.</li>
+    <li>Treat period changes as descriptive observations; investigate population or model
+    changes before claiming a historical trend.</li>
+  </ol>
+</body>
+</html>

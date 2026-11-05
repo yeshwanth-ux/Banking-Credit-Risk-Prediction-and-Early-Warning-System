@@ -1,0 +1,2 @@
+scoring_period,total_accounts,high_count,medium_count,low_count,high_proportion,medium_proportion,low_proportion,average_default_probability,data_status
+2026-11-05 00:00:00+00:00,3,1,1,1,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.5203486752601417,insufficient_observed_periods

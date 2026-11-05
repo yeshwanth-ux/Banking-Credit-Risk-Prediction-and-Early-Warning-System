@@ -149,6 +149,11 @@ Dataset assumptions, exact validation metrics, and known limitations are
 recorded in
 [docs/project_assumptions_limitations.md](docs/project_assumptions_limitations.md).
 
+The complete release documentation is indexed in
+[docs/README.md](docs/README.md), with final diagrams in
+[docs/release_architecture.md](docs/release_architecture.md) and release notes in
+[RELEASE_NOTES.md](RELEASE_NOTES.md).
+
 ## Selected research dataset
 
 Day 2 uses the UCI South German Credit dataset for reproducible exploratory
@@ -177,6 +182,22 @@ again with:
 Docker was unavailable on the verification host; Docker Compose configuration
 and image contracts are tested, but real container startup remains an explicit
 environment-specific verification step.
+
+## Final model evaluation and demo
+
+The frozen champion was evaluated once on the 200-row untouched test split at
+the validation-selected 0.44 threshold: ROC-AUC 0.8143, PR-AUC 0.6594,
+precision 0.4842, recall 0.7667, F1 0.5935, Brier score 0.1739, and expected
+calibration error 0.1418. The confusion matrix is TN 91, FP 49, FN 14, TP 46.
+See [the final evaluation](reports/final_test_evaluation.md) for interpretation.
+
+Run the anonymized demonstration:
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.run_release_demo
+```
+
+Sample inputs and generated prediction/report artifacts are under `demo/`.
 
 ## Data and responsible use
 

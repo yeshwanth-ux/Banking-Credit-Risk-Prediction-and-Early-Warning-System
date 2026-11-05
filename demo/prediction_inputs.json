@@ -1,0 +1,102 @@
+[
+  {
+    "loan_reference": "DEMO-LOWER-SIGNAL",
+    "features": {
+      "duration_months": 12,
+      "credit_amount_dm": 1800.0,
+      "age_years": 42,
+      "credit_amount_per_month": 150.0,
+      "checking_account_status": 4,
+      "credit_history": 4,
+      "purpose": 3,
+      "savings": 4,
+      "employment_duration": 5,
+      "installment_rate": 2,
+      "personal_status_sex": 3,
+      "other_debtors": 1,
+      "present_residence": 4,
+      "property": 3,
+      "other_installment_plans": 3,
+      "housing": 2,
+      "number_credits": 1,
+      "job": 3,
+      "people_liable": 1,
+      "telephone": 2,
+      "foreign_worker": 1,
+      "young_borrower_flag": 0,
+      "long_duration_flag": 0
+    },
+    "warning_inputs": {}
+  },
+  {
+    "loan_reference": "DEMO-REVIEW-SIGNAL",
+    "features": {
+      "duration_months": 24,
+      "credit_amount_dm": 4200.0,
+      "age_years": 31,
+      "credit_amount_per_month": 175.0,
+      "checking_account_status": 2,
+      "credit_history": 2,
+      "purpose": 0,
+      "savings": 2,
+      "employment_duration": 3,
+      "installment_rate": 3,
+      "personal_status_sex": 2,
+      "other_debtors": 1,
+      "present_residence": 2,
+      "property": 2,
+      "other_installment_plans": 3,
+      "housing": 2,
+      "number_credits": 2,
+      "job": 3,
+      "people_liable": 1,
+      "telephone": 2,
+      "foreign_worker": 1,
+      "young_borrower_flag": 0,
+      "long_duration_flag": 0
+    },
+    "warning_inputs": {
+      "missed_payment_count": 1,
+      "previous_missed_payment_count": 0,
+      "maximum_days_past_due": 35,
+      "previous_maximum_days_past_due": 5
+    }
+  },
+  {
+    "loan_reference": "DEMO-HIGH-SIGNAL",
+    "features": {
+      "duration_months": 36,
+      "credit_amount_dm": 8500.0,
+      "age_years": 24,
+      "credit_amount_per_month": 236.1111,
+      "checking_account_status": 1,
+      "credit_history": 0,
+      "purpose": 2,
+      "savings": 1,
+      "employment_duration": 1,
+      "installment_rate": 4,
+      "personal_status_sex": 3,
+      "other_debtors": 1,
+      "present_residence": 1,
+      "property": 1,
+      "other_installment_plans": 1,
+      "housing": 1,
+      "number_credits": 3,
+      "job": 2,
+      "people_liable": 2,
+      "telephone": 1,
+      "foreign_worker": 2,
+      "young_borrower_flag": 1,
+      "long_duration_flag": 1
+    },
+    "warning_inputs": {
+      "missed_payment_count": 3,
+      "previous_missed_payment_count": 1,
+      "maximum_days_past_due": 95,
+      "previous_maximum_days_past_due": 45,
+      "debt_to_income_ratio": 0.58,
+      "previous_debt_to_income_ratio": 0.39,
+      "previous_default_count": 1
+    }
+  }
+]

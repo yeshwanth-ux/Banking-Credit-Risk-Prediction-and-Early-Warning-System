@@ -43,6 +43,9 @@ reports/*
 !reports/model_explanations.json
 !reports/risk_threshold_analysis.md
 !reports/mlflow_registered_model.json
+!reports/final_test_evaluation.json
+!reports/final_test_evaluation.md
+!reports/final_test_calibration.csv
 !reports/figures/
 !reports/figures/*.png
 models/*.pkl
